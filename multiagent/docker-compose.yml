@@ -1,0 +1,21 @@
+# Сервис песочницы с теми же ограничениями, что и в agent/sandbox.py (docker run).
+# Сборка образа:  docker compose build sandbox
+# (то же самое без compose:  docker build -t multiagent-sandbox:latest ./sandbox)
+# Позже сюда добавятся сервисы наблюдаемости (Phoenix, Prometheus, Grafana).
+services:
+  sandbox:
+    build: ./sandbox
+    image: multiagent-sandbox:latest
+    profiles: ["tools"]          # не запускается сам по себе, агент вызывает его по запросу
+    network_mode: none           # нет сети
+    read_only: true              # корневая ФС только для чтения
+    cap_drop: [ALL]              # никаких Linux capabilities
+    security_opt: ["no-new-privileges:true"]
+    user: "10001:10001"
+    mem_limit: 256m
+    memswap_limit: 256m
+    cpus: 0.5
+    pids_limit: 64
+    tmpfs: ["/tmp:size=16m,noexec,nosuid"]
+    volumes:
+      - ./shop.db:/data/shop.db:ro
